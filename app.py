@@ -1,4 +1,4 @@
-import streamlit as st
+import gradio as gr
 import os
 from langchain_groq import ChatGroq
 from langchain_community.embeddings import OllamaEmbeddings
@@ -11,7 +11,6 @@ from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 import requests
 import json
-import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,8 +20,7 @@ os.environ['GROQ_API_KEY'] = os.getenv("GROQ_API_KEY")
 os.environ['HF_TOKEN'] = os.getenv("HF_TOKEN")
 
 # Initialize LLM and embeddings
-llm = ChatGroq(groq_api_key=os.getenv(
-    "GROQ_API_KEY"), model_name="Llama3-8b-8192")
+llm = ChatGroq(groq_api_key=os.getenv("GROQ_API_KEY"), model_name="Llama3-8b-8192")
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 # Define Prompt Template for Document Q&A
@@ -38,8 +36,6 @@ prompt = ChatPromptTemplate.from_template(
 )
 
 # Load Movie Knowledge Base for Level 1
-
-
 def load_knowledge_base():
     return {
         "Action": ["The Last Warrior", "Speed Breakers"],
@@ -48,29 +44,18 @@ def load_knowledge_base():
         "Sci-Fi": ["Beyond the Stars", "Time Travelers"]
     }
 
-
 knowledge_base = load_knowledge_base()
 
 # Create Vector Embeddings for Level 2
-
-
 def create_vector_embedding():
-    if "vectors" not in st.session_state:
-        st.session_state.embeddings = HuggingFaceEmbeddings(
-            model_name="all-MiniLM-L6-v2")
-        st.session_state.loader = PyPDFDirectoryLoader(
-            "research_papers")  # Data Ingestion step
-        st.session_state.docs = st.session_state.loader.load()  # Document Loading
-        st.session_state.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000, chunk_overlap=200)
-        st.session_state.final_documents = st.session_state.text_splitter.split_documents(
-            st.session_state.docs[:50])
-        st.session_state.vectors = FAISS.from_documents(
-            st.session_state.final_documents, st.session_state.embeddings)
+    loader = PyPDFDirectoryLoader("research_papers")  # Data Ingestion step
+    docs = loader.load()  # Document Loading
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    final_documents = text_splitter.split_documents(docs[:50])
+    vectors = FAISS.from_documents(final_documents, embeddings)
+    return vectors
 
 # Perform Web Search for Level 3
-
-
 def web_search(query):
     # Using a mock search API, replace with actual implementation if needed
     api_url = f"https://api.duckduckgo.com/?q={query}&format=json"
@@ -81,61 +66,49 @@ def web_search(query):
     else:
         return "Error fetching web search results."
 
+# Define Gradio Functions
+# Level 1: Movie Recommendations
+def recommend_movies(genre):
+    genre = genre.strip().capitalize()
+    if genre in knowledge_base:
+        return f"Here are some {genre} movies: {', '.join(knowledge_base[genre])}"
+    else:
+        return "Sorry, I couldn't find any recommendations for that genre. Please try another!"
 
-# Streamlit App Layout
-st.title("Conversational AI Assistant with Multi-Modal Knowledge Integration")
+# Level 2: PDF Q&A
+def pdf_qa(query):
+    vectors = create_vector_embedding()
+    document_chain = create_stuff_documents_chain(llm, prompt)
+    retriever = vectors.as_retriever()
+    retrieval_chain = create_retrieval_chain(retriever, document_chain)
+    response = retrieval_chain.invoke({'input': query})
+    answer = response['answer']
+    contexts = [doc.page_content for doc in response['context']]
+    return answer, contexts
 
-# Tabbed Interface
-tab1, tab2, tab3 = st.tabs(["Movie Recommendations", "PDF Q&A", "Web Search"])
+# Level 3: Web Search
+def search_web(query):
+    return web_search(query)
 
-# Tab 1: Level 1 - Movie Recommendations
-with tab1:
-    st.header("Movie Recommendations Chatbot")
-    user_query = st.text_input(
-        "Enter a movie genre (e.g., Action, Romance, Comedy):")
+# Gradio Interface
+with gr.Blocks() as demo:
+    gr.Markdown("# Conversational AI Assistant with Multi-Modal Knowledge Integration")
 
-    if st.button("Get Recommendations"):
-        genre = user_query.strip().capitalize()
-        if genre in knowledge_base:
-            movies = ", ".join(knowledge_base[genre])
-            st.success(f"Here are some {genre} movies: {movies}")
-        else:
-            st.error(
-                "Sorry, I couldn't find any recommendations for that genre. Please try another!")
+    with gr.Tab("Movie Recommendations"):
+        genre_input = gr.Textbox(label="Enter a movie genre (e.g., Action, Romance, Comedy)")
+        movie_output = gr.Textbox(label="Movie Recommendations")
+        gr.Button("Get Recommendations").click(recommend_movies, inputs=genre_input, outputs=movie_output)
 
-# Tab 2: Level 2 - PDF Q&A
-with tab2:
-    st.header("PDF Q&A with Retrieval Augmented Generation")
-    user_prompt = st.text_input("Enter your query for the research papers:")
+    with gr.Tab("PDF Q&A"):
+        pdf_query = gr.Textbox(label="Enter your query for the research papers")
+        pdf_answer = gr.Textbox(label="Answer")
+        pdf_contexts = gr.Textbox(label="Relevant Contexts", lines=5)
+        gr.Button("Get Answer").click(pdf_qa, inputs=pdf_query, outputs=[pdf_answer, pdf_contexts])
 
-    if st.button("Prepare Document Embedding"):
-        create_vector_embedding()
-        st.success("Vector Database is ready.")
+    with gr.Tab("Web Search"):
+        search_query = gr.Textbox(label="Enter your search query")
+        search_results = gr.Textbox(label="Search Results", lines=5)
+        gr.Button("Search").click(search_web, inputs=search_query, outputs=search_results)
 
-    if user_prompt:
-        document_chain = create_stuff_documents_chain(llm, prompt)
-        retriever = st.session_state.vectors.as_retriever()
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
-
-        start = time.process_time()
-        response = retrieval_chain.invoke({'input': user_prompt})
-        elapsed_time = time.process_time() - start
-
-        st.write(f"Response: {response['answer']}")
-        st.write(f"Response Time: {elapsed_time:.2f} seconds")
-
-        # Display retrieved context
-        with st.expander("Document Similarity Search Results"):
-            for i, doc in enumerate(response['context']):
-                st.write(f"Document {i + 1}:")
-                st.write(doc.page_content)
-                st.write('------------------------')
-
-# Tab 3: Level 3 - Web Search
-with tab3:
-    st.header("Web Search with LLM Integration")
-    search_query = st.text_input("Enter your search query:")
-
-    if st.button("Search the Web"):
-        search_results = web_search(search_query)
-        st.write(f"Search Results: {search_results}")
+# Launch the Gradio App
+demo.launch()
