@@ -83,7 +83,7 @@ def web_search(query):
 
 
 # Streamlit App Layout
-st.title("Unified Chatbot: Movie Recommendations, PDF Q&A, and Web Search")
+st.title("Conversational AI Assistant with Multi-Modal Knowledge Integration")
 
 # Tabbed Interface
 tab1, tab2, tab3 = st.tabs(["Movie Recommendations", "PDF Q&A", "Web Search"])
