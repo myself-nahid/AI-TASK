@@ -9,14 +9,14 @@ This project demonstrates the development of a comprehensive conversational AI a
 ## Features
 
 - **Multi-Modal AI**: Combines traditional chatbot capabilities, document-based retrieval, and web search in a single interface.
-- **Interactive UI**: Built with Streamlit, providing an intuitive and user-friendly experience.
+- **Interactive UI**: Built with Gradio, providing an intuitive and user-friendly experience.
 - **LLM-Driven Intelligence**: Powered by Groq's Llama3-8b-8192 and HuggingFace embeddings for accurate responses.
 - **Customizable Knowledge Base**: Easy to extend and adapt for new domains or datasets.
 
 ## Technologies Used
 
 - **Python**: Core programming language.
-- **Streamlit**: Web framework for interactive applications.
+- **Gradio**: Web framework for interactive applications.
 - **LangChain**: Framework for working with LLMs and building chains.
 - **Groq LLM API**: For natural language processing tasks.
 - **FAISS**: Vector database for efficient similarity search.
@@ -30,7 +30,7 @@ This project demonstrates the development of a comprehensive conversational AI a
 1. Python 3.8 or higher.
 2. Required Python libraries:
    ```bash
-   pip install streamlit langchain_groq langchain_community langchain_huggingface
+   pip install gradio langchain_groq langchain_community langchain_huggingface
    ```
 3. API Keys:
    - GROQ API Key
@@ -54,9 +54,9 @@ This project demonstrates the development of a comprehensive conversational AI a
 
 ### Running the Application
 
-Run the Streamlit app:
+Run the Gradio app:
 ```bash
-streamlit run app.py
+python app.py
 ```
 
 ### Usage
@@ -96,4 +96,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 - [LangChain](https://langchain.readthedocs.io/)
 - [Groq LLM](https://groq.com/)
-- [Streamlit](https://streamlit.io/)
+- [Gradio](https://gradio.app/)
