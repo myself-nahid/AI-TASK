@@ -15,3 +15,4 @@ langchain_huggingface
 faiss-cpu
 langchain_chroma
 duckdb
+gunicorn==20.0.4
