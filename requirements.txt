@@ -10,7 +10,6 @@ arxiv
 pymupdf
 wikipedia
 langchain_text_splitters
-chromabd
 sentence_transformers
 langchain_huggingface
 faiss-cpu
