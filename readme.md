@@ -14,7 +14,7 @@ This project demonstrates the development of a comprehensive conversational AI a
 - **Customizable Knowledge Base**: Easy to extend and adapt for new domains or datasets.
 
 ## Project Demo
-![Alt text](demo project/img2.png)
+![Alt text](demo-project/img2.png)
 
 ## Technologies Used
 
