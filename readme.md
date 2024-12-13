@@ -40,8 +40,8 @@ This project demonstrates the development of a comprehensive conversational AI a
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/conversational-ai-assistant.git
-   cd conversational-ai-assistant
+   git clone https://github.com/myself-nahid/Conversational-AI-Assistant.git
+   cd Conversational-AI-Assistant
    ```
 
 2. Create a `.env` file in the root directory and add the following:
