@@ -15,6 +15,9 @@ This project demonstrates the development of a comprehensive conversational AI a
 
 ## Project Demo
 ![Alt text](demo-project/img2.png)
+![Alt text](demo-project/img4.png)
+![Alt text](demo-project/img5.png)
+![Alt text](demo-project/img6.png)
 
 ## Technologies Used
 
