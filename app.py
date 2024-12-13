@@ -111,7 +111,8 @@ with gr.Blocks() as demo:
         gr.Button("Search").click(search_web, inputs=search_query, outputs=search_results)
 
 # Fetch the dynamically assigned port from Render
-port = int(os.environ.get("PORT", 7860))  # Default to 7860 if PORT isn't set
+#port = int(os.environ.get("PORT", 7860))  # Default to 7860 if PORT isn't set
 
 # Launch the Gradio App
-demo.launch(server_name="0.0.0.0", server_port=port)
+#demo.launch(server_name="0.0.0.0", server_port=port)
+demo.launch()
